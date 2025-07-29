@@ -1,0 +1,10 @@
+--- a/libavformat/hlsplaylist.c	2024-09-30 06:31:48.000000000 +0700
++++ b/libavformat/hlsplaylist.c	2025-07-29 15:14:13.445959000 +0700
+@@ -91,6 +91,7 @@
+     if (st && st->codecpar->width > 0 && st->codecpar->height > 0)
+         avio_printf(out, ",RESOLUTION=%dx%d", st->codecpar->width,
+                 st->codecpar->height);
++	avio_printf(out, ",FRAME-RATE=%d", st->codecpar->framerate.num);
+     if (codecs && codecs[0])
+         avio_printf(out, ",CODECS=\"%s\"", codecs);
+     if (agroup && agroup[0])
