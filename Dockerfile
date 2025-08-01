@@ -41,6 +41,7 @@ ENV \
   LIBVMAF=3.0.0 \
   LIBVPL=2.15.0 \
   MESA=25.1.3 \
+  NVCODEC=n13.0.19.0 \
   OGG=1.3.5 \
   OPENCOREAMR=0.1.6 \
   OPENJPEG=2.5.3 \
@@ -54,6 +55,7 @@ ENV \
   VORBIS=1.3.7 \
   VPLGPURT=25.1.4 \
   VPX=1.15.2 \
+  VVENC=1.13.1 \
   WEBP=1.5.0 \
   X265=4.1 \
   XVID=1.3.7 \
@@ -174,6 +176,17 @@ RUN \
   make && \
   make install && \
   strip -d /usr/local/lib/libfdk-aac.so
+RUN \
+  echo "**** grabbing ffnvcodec ****" && \
+  mkdir -p /tmp/ffnvcodec && \
+  git clone \
+    --branch ${NVCODEC} \
+    --depth 1 https://github.com/FFmpeg/nv-codec-headers.git \
+    /tmp/ffnvcodec
+RUN \
+  echo "**** compiling ffnvcodec ****" && \
+  cd /tmp/ffnvcodec && \
+  make install
 RUN \
   echo "**** grabbing freetype ****" && \
   mkdir -p /tmp/freetype && \
@@ -734,6 +747,18 @@ RUN \
   make && \
   make install
 RUN \
+  echo "**** grabbing vvenc ****" && \
+  mkdir -p /tmp/vvenc && \
+  git clone \
+    --branch v${VVENC} \
+    --depth 1 https://github.com/fraunhoferhhi/vvenc.git \
+    /tmp/vvenc
+RUN \
+  echo "**** compiling vvenc ****" && \
+  cd /tmp/vvenc && \
+  make install install-prefix=/usr/local && \
+  strip -d /usr/local/lib/libvvenc.so
+RUN \
   echo "**** grabbing webp ****" && \
   mkdir -p /tmp/webp && \
   curl -Lf \
@@ -847,6 +872,7 @@ RUN \
     --disable-doc \
     --disable-ffplay \
     --enable-alsa \
+    --enable-cuda-llvm \
     --enable-cuvid \
     --enable-ffprobe \
     --enable-gpl \
@@ -878,6 +904,7 @@ RUN \
     --enable-libvorbis \
     --enable-libvpl \
     --enable-libvpx \
+    --enable-libvvenc \
     --enable-libwebp \
     --enable-libx264 \
     --enable-libx265 \
@@ -886,6 +913,8 @@ RUN \
     --enable-libzimg \
     --enable-libzmq \
     --enable-nonfree \
+    --enable-nvdec \
+    --enable-nvenc \
     --enable-opencl \
     --enable-openssl \
     --enable-stripping \
@@ -944,7 +973,10 @@ RUN \
     /buildout/usr/share/libdrm/ && \
   cp -a \
     /usr/share/fonts/* \
-    /buildout/usr/share/fonts/
+    /buildout/usr/share/fonts/ && \
+  echo \
+    'libnvidia-opencl.so.1' > \
+    /buildout/etc/OpenCL/vendors/nvidia.icd
 
 # runtime stage
 FROM ghcr.io/linuxserver/baseimage-ubuntu:noble
@@ -963,7 +995,9 @@ ARG DEBIAN_FRONTEND="noninteractive"
 # hardware env
 ENV \
   LIBVA_DRIVERS_PATH="/usr/local/lib/x86_64-linux-gnu/dri" \
-  LD_LIBRARY_PATH="/usr/local/lib"
+  LD_LIBRARY_PATH="/usr/local/lib" \
+  NVIDIA_DRIVER_CAPABILITIES="compute,video,utility" \
+  NVIDIA_VISIBLE_DEVICES="all"
 
 RUN \
   echo "**** install runtime ****" && \
