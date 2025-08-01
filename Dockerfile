@@ -898,7 +898,7 @@ COPY /rtmpreconnect2.patch /tmp/ffmpeg/
 RUN \
   echo "**** compiling ffmpeg ****" && \
   cd /tmp/ffmpeg && \
-  patch -p1 < ffmpeg_n7_fix.patch && patch -p1 < hls_framerate.patch && patch -p1 < rtmpreconnect2.patch && \
+  patch -p1 < ffmpeg_n7_fix.patch && patch -p1 < hls_framerate.patch && patch -p1 < rtmpreconnect.patch && \
   ./configure \
     --disable-debug \
     --disable-doc \
