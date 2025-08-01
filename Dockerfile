@@ -9,7 +9,7 @@ ARG FFMPEG_VERSION
 # common env
 ENV \
   DEBIAN_FRONTEND="noninteractive" \
-  MAKEFLAGS="-j4" \
+  MAKEFLAGS="-j16" \
   CMAKE_POLICY_VERSION_MINIMUM="3.5" \
   PATH="/root/.cargo/bin:${PATH}"
 
