@@ -893,7 +893,7 @@ RUN \
 # Apply patch for svt-av1: https://gitlab.com/AOMediaCodec/SVT-AV1/-/issues/2249#note_2361478864
 COPY /ffmpeg_n7_fix.patch /tmp/ffmpeg/
 COPY /hls_framerate.patch /tmp/ffmpeg/
-COPY /rtmpreconnect2.patch /tmp/ffmpeg/
+COPY /rtmpreconnect.patch /tmp/ffmpeg/
 
 RUN \
   echo "**** compiling ffmpeg ****" && \
