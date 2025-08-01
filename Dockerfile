@@ -55,6 +55,7 @@ ENV \
   VORBIS=1.3.7 \
   VPLGPURT=25.1.4 \
   VPX=1.15.2 \
+  VULKANSDK=vulkan-sdk-1.4.313.0 \
   VVENC=1.13.1 \
   WEBP=1.5.0 \
   X265=4.1 \
@@ -747,6 +748,37 @@ RUN \
   make && \
   make install
 RUN \
+  echo "**** grabbing vulkan headers ****" && \
+  mkdir -p /tmp/vulkan-headers && \
+  git clone \
+    --branch ${VULKANSDK} \
+    --depth 1 https://github.com/KhronosGroup/Vulkan-Headers.git \
+    /tmp/vulkan-headers
+RUN \
+  echo "**** compiling vulkan headers ****" && \
+  cd /tmp/vulkan-headers && \
+  cmake -S . -B build/ && \
+  cmake --install build --prefix /usr/local
+RUN \
+  echo "**** grabbing vulkan loader ****" && \
+  mkdir -p /tmp/vulkan-loader && \
+  git clone \
+    --branch ${VULKANSDK} \
+    --depth 1 https://github.com/KhronosGroup/Vulkan-Loader.git \
+    /tmp/vulkan-loader
+RUN \
+  echo "**** compiling vulkan loader ****" && \
+  cd /tmp/vulkan-loader && \
+  mkdir -p build && \
+  cd build && \
+  cmake \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D VULKAN_HEADERS_INSTALL_DIR=/usr/local/lib/x86_64-linux-gnu \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    .. && \
+  make && \
+  make install
+RUN \
   echo "**** grabbing vvenc ****" && \
   mkdir -p /tmp/vvenc && \
   git clone \
@@ -921,6 +953,7 @@ RUN \
     --enable-vaapi \
     --enable-vdpau \
     --enable-version3 \
+    --enable-vulkan \
     && \
   make
 
@@ -935,6 +968,7 @@ RUN \
     /buildout/usr/local/lib/mfx \
     /buildout/usr/local/lib/x86_64-linux-gnu/dri \
     /buildout/usr/local/lib/x86_64-linux-gnu/vdpau \
+    /buildout/usr/local/share/vulkan \
     /buildout/usr/share/fonts \
     /buildout/usr/share/libdrm \
     /buildout/etc/OpenCL/vendors && \
@@ -974,6 +1008,9 @@ RUN \
   cp -a \
     /usr/share/fonts/* \
     /buildout/usr/share/fonts/ && \
+  cp -a \
+    /usr/local/share/vulkan/* \
+    /buildout/usr/local/share/vulkan/ && \
   echo \
     'libnvidia-opencl.so.1' > \
     /buildout/etc/OpenCL/vendors/nvidia.icd
