@@ -1,6 +1,6 @@
 --- a/libavformat/rtmpproto.c	2025-03-03 04:08:21.000000000 +0700
-+++ b/libavformat/rtmpproto.c	2025-08-02 14:13:28.314667300 +0700
-@@ -1,3192 +1,3459 @@
++++ b/libavformat/rtmpproto.c	2025-08-02 14:51:37.336788300 +0700
+@@ -1,3192 +1,3455 @@
 -/*
 - * RTMP network protocol
 - * Copyright (c) 2009 Konstantin Shishkov
@@ -3381,7 +3381,6 @@
 +
 +    rt->tracked_methods[rt->nb_tracked_methods].name = av_strdup(name);
 +    if (!rt->tracked_methods[rt->nb_tracked_methods].name) {
-+        av_log(s, AV_LOG_ERROR, "RTMP: Failed to allocate memory for tracked method name\n");
 +        return AVERROR(ENOMEM);
 +    }
 +    rt->tracked_methods[rt->nb_tracked_methods].id = id;
@@ -4875,7 +4874,6 @@
 +    char hashstr[AV_BASE64_SIZE(sizeof(hash))], challenge2[10];
 +    struct AVMD5 *md5 = av_md5_alloc();
 +    if (!md5) {
-+        av_log(rt, AV_LOG_ERROR, "RTMP: Failed to allocate MD5 context for Adobe auth\n");
 +        return AVERROR(ENOMEM);
 +    }
 +
@@ -4920,7 +4918,6 @@
 +    char cnonce[10];
 +    struct AVMD5 *md5 = av_md5_alloc();
 +    if (!md5) {
-+        av_log(rt, AV_LOG_ERROR, "RTMP: Failed to allocate MD5 context for LLNW auth\n");
 +        return AVERROR(ENOMEM);
 +    }
 +
@@ -5846,7 +5843,6 @@
 +    uint8_t* old_flv_data = rt->flv_data;
 +    // Allocate a new flv_data pointer with enough space for the additional package
 +    if (!(rt->flv_data = av_malloc(rt->flv_size + 55))) {
-+        av_log(rt, AV_LOG_ERROR, "RTMP: Failed to allocate memory for fake duration metadata\n");
 +        rt->flv_data = old_flv_data;
 +        return AVERROR(ENOMEM);
 +    }
@@ -5903,12 +5899,12 @@
 +static int rtmp_do_reconnect(URLContext *s)
 +{
 +    RTMPContext *rt = s->priv_data;
-+    char proto[8], hostname[256], path[1024], auth[100], *fname;
-+    char *old_app, *qmark, *n, fname_buffer[1024];
++    char proto[8], hostname[256], path[1024], auth[100];
 +    uint8_t buf[2048];
 +    int port;
 +    int ret;
 +    int64_t current_time;
++    int delay;
 +
 +    if (!rt->reconnect_enabled) {
 +        av_log(s, AV_LOG_ERROR, "Reconnect is disabled\n");
@@ -5972,7 +5968,7 @@
 +               rt->reconnect_attempts, av_err2str(ret));
 +        
 +        // Wait a bit before next attempt (exponential backoff)
-+        int delay = FFMIN(rt->reconnect_attempts * 2, 10); // Max 10 seconds delay
++        delay = FFMIN(rt->reconnect_attempts * 2, 10); // Max 10 seconds delay
 +        av_usleep(delay * 1000000); // Convert to microseconds
 +        
 +        return ret;
