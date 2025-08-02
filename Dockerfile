@@ -893,12 +893,12 @@ RUN \
 # Apply patch for svt-av1: https://gitlab.com/AOMediaCodec/SVT-AV1/-/issues/2249#note_2361478864
 COPY /ffmpeg_n7_fix.patch /tmp/ffmpeg/
 COPY /hls_framerate.patch /tmp/ffmpeg/
-COPY /rtmpreconnect_test5.patch /tmp/ffmpeg/
+COPY /rtmpreconnect_test6.patch /tmp/ffmpeg/
 
 RUN \
   echo "**** compiling ffmpeg ****" && \
   cd /tmp/ffmpeg && \
-  patch -p1 < ffmpeg_n7_fix.patch && patch -p1 < hls_framerate.patch && patch -p1 < rtmpreconnect_test5.patch && \
+  patch -p1 < ffmpeg_n7_fix.patch && patch -p1 < hls_framerate.patch && patch -p1 < rtmpreconnect_test6.patch && \
   ./configure \
     --disable-debug \
     --disable-doc \
